@@ -1,6 +1,14 @@
 .container {
   width: 100%;
-  background-color: aliceblue;
+  background-color: #0a0a0a;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.containerContent {
+  position: relative;
+  z-index: 1;
 }
 
 .section {
@@ -23,4 +31,119 @@
   align-items: center;
   justify-content: center;
   will-change: transform;
+}
+
+.edgeTag {
+  position: absolute;
+  padding: 40px 60px;
+  border-radius: 16px;
+  color: #1a1a2e;
+  font-size: 36px;
+  font-weight: 700;
+  font-family: var(--font-calligraphy), cursive;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+  animation: floatX 4s ease-in-out infinite;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+@keyframes floatX {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(40px); }
+}
+
+.slideBox {
+  position: relative;
+  border-radius: 12px;
+  overflow: visible;
+}
+
+.slideBox::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 18px;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    #6366f1,
+    #a855f7,
+    #ec4899,
+    #3b82f6,
+    #06b6d4,
+    #8b5cf6,
+    #6366f1
+  );
+  z-index: -1;
+  animation: rotateBorder 4s linear infinite;
+  opacity: 0.8;
+}
+
+.slideBox::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 18px;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    #6366f1,
+    #a855f7,
+    #ec4899,
+    #3b82f6,
+    #06b6d4,
+    #8b5cf6,
+    #6366f1
+  );
+  z-index: -1;
+  animation: rotateBorder 4s linear infinite;
+  filter: blur(16px);
+  opacity: 0.4;
+}
+
+@property --border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotateBorder {
+  to { --border-angle: 360deg; }
+}
+
+.slideText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.slideTitle {
+  color: white;
+  font-family: var(--font-calligraphy), cursive;
+  font-size: 144px;
+  font-weight: 700;
+  text-shadow: 0 6px 40px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.slideSubtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-calligraphy), cursive;
+  font-size: 56px;
+  font-weight: 500;
+  margin-top: 20px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  text-align: center;
 }

@@ -7,6 +7,7 @@ import PageOne from "./pages/PageOne";
 import PageTwo from "./pages/PageTwo";
 import PageThree from "./pages/PageThree";
 import PageFour from "./pages/PageFour";
+import ParticleCanvas from "../ParticleCanvas";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,7 +15,6 @@ export default function StoryOne() {
   const containerRef = useRef<HTMLDivElement>(null);
   const horizontalRef = useRef<HTMLDivElement>(null);
   const nextSectionRef = useRef<HTMLDivElement>(null);
-
   useLayoutEffect(() => {
     if (
       !horizontalRef.current ||
@@ -67,10 +67,13 @@ export default function StoryOne() {
 
   return (
     <div className={styles.container}>
-      <PageOne />
-      <PageTwo />
-      <PageThree ref={containerRef} horizontalRef={horizontalRef} />
-      <PageFour ref={nextSectionRef} />
+      <ParticleCanvas />
+      <div className={styles.containerContent}>
+        <PageOne />
+        <PageTwo />
+        <PageThree ref={containerRef} horizontalRef={horizontalRef} />
+        <PageFour ref={nextSectionRef} />
+      </div>
     </div>
   );
 }
