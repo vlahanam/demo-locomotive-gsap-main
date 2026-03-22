@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# demo-locomotive-gsap
+
+A Next.js demo showcasing scroll-driven animation using **Locomotive Scroll v5** and **GSAP ScrollTrigger**. The primary demonstration is a horizontal scroll section with a diagonal cinematic transition into the next section.
+
+## Tech Stack
+
+| Package | Version |
+|---|---|
+| Next.js | 16.2.1 |
+| React | 19.2.4 |
+| GSAP | 3.14.2 |
+| Locomotive Scroll | 5.0.1 |
+| Tailwind CSS | 4.x |
+| TypeScript | 5.x |
+
+## Features
+
+- Locomotive Scroll v5 initialized client-side via dynamic import (SSR-safe)
+- GSAP ScrollTrigger horizontal scroll (3-panel) with `pin` + `scrub`
+- Diagonal scene fly-out / next-section fly-in transition (Phase 2 + Phase 3)
+- CSS Modules for scoped component styles
+- Tailwind CSS v4 with PostCSS
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── favicon.ico
+│   ├── globals.css        # Tailwind v4 import + CSS custom properties
+│   ├── layout.tsx         # Root layout, Geist font, overflow:hidden body
+│   └── page.tsx           # Client entry; initializes LocomotiveScroll, renders StoryOne
+└── components/
+    └── StoryOne/
+        ├── index.tsx      # GSAP ScrollTrigger horizontal + transition logic
+        └── styles.module.css  # Scoped CSS: .container, .section, .horizontal, .box2
+
+public/
+└── images/
+    └── story-1/           # 8 travel photo assets (Vietnam, Japan)
+```
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How the Animation Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`StoryOne` uses `useLayoutEffect` + `gsap.context` for safe cleanup.
 
-## Learn More
+**Phase 1 – Horizontal scroll** (duration: 1 unit)
+Translates all 3 `.box2` panels left via `xPercent`.
 
-To learn more about Next.js, take a look at the following resources:
+**Phase 2 – Scene fly-out** (duration: 0.1 unit)
+The entire horizontal container moves off-screen diagonally (`x: -400, y: -400`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Phase 3 – Next section fly-in** (duration: 0.1 unit, overlaps Phase 2)
+Section 4 slides from its offset start position (`x: 400, y: 300`) to `0,0`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+ScrollTrigger config:
+- `trigger`: `.container` (Section 3)
+- `pin: true`, `scrub: true`
+- `end`: `+= totalWidth * 2`
+- `markers: true` (dev mode, visible in browser)
 
-## Deploy on Vercel
+## Configuration Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `next.config.ts` allows dev origin `mckayla-nonsymbiotical-sabra.ngrok-free.dev` (ngrok tunnel)
+- Body has `overflow: hidden` — Locomotive Scroll manages scroll
+- `tsconfig.json` path alias `@/*` maps to project root
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Development
+
+```bash
+pnpm dev      # development server
+pnpm build    # production build
+pnpm start    # production server
+pnpm lint     # ESLint (Next.js + TypeScript rules)
+```
+
+## Known Issues / Dev Notes
+
+- `markers: true` in ScrollTrigger is active — remove for production
+- No image assets are used in `StoryOne` yet; placeholder colored divs are rendered instead
+- `public/images/story-1/` contains 8 travel photos available for future use
