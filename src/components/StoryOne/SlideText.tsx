@@ -9,6 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
 interface SlideTextProps {
   title: string;
   subtitle: string;
+  description?: string;
   horizontal?: boolean;
   intro?: boolean;
 }
@@ -16,86 +17,116 @@ interface SlideTextProps {
 export default function SlideText({
   title,
   subtitle,
+  description,
   horizontal = false,
   intro = false,
 }: SlideTextProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const descRef = useRef<HTMLParagraphElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (!containerRef.current || !titleRef.current || !subtitleRef.current)
       return;
 
+    const elements = [titleRef.current, subtitleRef.current];
+    if (descRef.current) elements.push(descRef.current);
+    if (lineRef.current) elements.push(lineRef.current);
+
     if (intro) {
-      // First slide — fly in from sides on page load
-      gsap.set(titleRef.current, {
-        opacity: 0,
-        x: -300,
-        scale: 0.7,
-        filter: "blur(20px)",
-      });
+      // Stagger character animation for title
+      const titleChars = titleRef.current.querySelectorAll(".char");
+      if (titleChars.length > 0) {
+        gsap.set(titleChars, {
+          opacity: 0,
+          y: 80,
+          rotateX: -90,
+          transformOrigin: "50% 50% -30px",
+        });
+        gsap.to(titleChars, {
+          y: 0,
+          opacity: 1,
+          rotateX: 0,
+          duration: 1.2,
+          stagger: 0.04,
+          delay: 0.3,
+          ease: "back.out(1.7)",
+        });
+      } else {
+        gsap.set(titleRef.current, {
+          opacity: 0,
+          y: 100,
+          scale: 0.8,
+          filter: "blur(20px)",
+        });
+        gsap.to(titleRef.current, {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          filter: "blur(0px)",
+          duration: 1.5,
+          delay: 0.3,
+          ease: "power4.out",
+        });
+      }
+
       gsap.set(subtitleRef.current, {
         opacity: 0,
-        x: 300,
-        scale: 0.7,
-        filter: "blur(20px)",
+        y: 60,
+        filter: "blur(15px)",
       });
-
-      // Title flies in from left
-      gsap.to(titleRef.current, {
-        x: 0,
-        opacity: 1,
-        scale: 1,
-        filter: "blur(0px)",
-        duration: 1.5,
-        delay: 0.3,
-        ease: "power4.out",
-      });
-
-      // Subtitle flies in from right
       gsap.to(subtitleRef.current, {
-        x: 0,
+        y: 0,
         opacity: 1,
-        scale: 1,
         filter: "blur(0px)",
-        duration: 1.5,
-        delay: 0.6,
-        ease: "power4.out",
+        duration: 1.2,
+        delay: 0.8,
+        ease: "power3.out",
       });
 
-      // OUT on scroll — scrub with fromTo so reverse works
+      if (descRef.current) {
+        gsap.set(descRef.current, { opacity: 0, y: 40 });
+        gsap.to(descRef.current, {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          delay: 1.2,
+          ease: "power2.out",
+        });
+      }
+
+      if (lineRef.current) {
+        gsap.set(lineRef.current, { scaleX: 0, opacity: 0 });
+        gsap.to(lineRef.current, {
+          scaleX: 1,
+          opacity: 1,
+          duration: 0.8,
+          delay: 1,
+          ease: "power2.out",
+        });
+      }
+
+      // OUT on scroll
       const ctx = gsap.context(() => {
+        const allEls = [titleRef.current, subtitleRef.current];
+        if (descRef.current) allEls.push(descRef.current);
+        if (lineRef.current) allEls.push(lineRef.current);
+
         gsap.fromTo(
-          titleRef.current,
-          { x: 0, opacity: 1, scale: 1, filter: "blur(0px)" },
+          allEls,
+          { y: 0, opacity: 1, filter: "blur(0px)" },
           {
-            x: -200,
+            y: -150,
             opacity: 0,
-            scale: 0.85,
-            filter: "blur(16px)",
-            ease: "power2.in",
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "bottom 80%",
-              end: "bottom 20%",
-              scrub: 0.8,
-            },
-          },
-        );
-        gsap.fromTo(
-          subtitleRef.current,
-          { x: 0, opacity: 1, scale: 1, filter: "blur(0px)" },
-          {
-            x: 200,
-            opacity: 0,
-            scale: 0.85,
             filter: "blur(12px)",
             ease: "power2.in",
+            stagger: 0.05,
             scrollTrigger: {
               trigger: containerRef.current,
-              start: "bottom 80%",
-              end: "bottom 20%",
+              start: "bottom 85%",
+              end: "bottom 25%",
               scrub: 0.8,
             },
           },
@@ -106,24 +137,20 @@ export default function SlideText({
     }
 
     // Set initial hidden state
-    gsap.set([titleRef.current, subtitleRef.current], {
+    gsap.set(elements, {
       opacity: 0,
-      y: 120,
-      scale: 0.85,
-      filter: "blur(16px)",
+      y: 100,
+      filter: "blur(12px)",
     });
 
     if (horizontal) {
-      // For horizontal scroll panels — use IntersectionObserver
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting && entry.intersectionRatio > 0.3) {
-              // Animate IN
               gsap.to(titleRef.current, {
                 y: 0,
                 opacity: 1,
-                scale: 1,
                 filter: "blur(0px)",
                 duration: 1,
                 ease: "power3.out",
@@ -131,29 +158,28 @@ export default function SlideText({
               gsap.to(subtitleRef.current, {
                 y: 0,
                 opacity: 1,
-                scale: 1,
                 filter: "blur(0px)",
                 duration: 1,
                 delay: 0.15,
                 ease: "power3.out",
               });
+              if (descRef.current) {
+                gsap.to(descRef.current, {
+                  y: 0,
+                  opacity: 1,
+                  filter: "blur(0px)",
+                  duration: 1,
+                  delay: 0.3,
+                  ease: "power3.out",
+                });
+              }
             } else if (!entry.isIntersecting) {
-              // Animate OUT
-              gsap.to(titleRef.current, {
-                y: -80,
+              gsap.to(elements, {
+                y: -60,
                 opacity: 0,
-                scale: 0.9,
-                filter: "blur(12px)",
-                duration: 0.6,
-                ease: "power2.in",
-              });
-              gsap.to(subtitleRef.current, {
-                y: -50,
-                opacity: 0,
-                scale: 0.9,
                 filter: "blur(8px)",
-                duration: 0.6,
-                delay: 0.05,
+                duration: 0.5,
+                stagger: 0.05,
                 ease: "power2.in",
               });
             }
@@ -166,7 +192,7 @@ export default function SlideText({
       return () => observer.disconnect();
     }
 
-    // For vertical scroll slides — use ScrollTrigger
+    // Vertical scroll slides
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -177,69 +203,85 @@ export default function SlideText({
         },
       });
 
-      // IN phase (0 → 0.25)
+      // IN phase
       tl.to(
         titleRef.current,
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          filter: "blur(0px)",
-          duration: 0.25,
-          ease: "power3.out",
-        },
+        { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" },
         0,
       );
       tl.to(
         subtitleRef.current,
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          filter: "blur(0px)",
-          duration: 0.25,
-          ease: "power3.out",
-        },
-        0.08,
+        { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" },
+        0.05,
       );
+      if (descRef.current) {
+        tl.to(
+          descRef.current,
+          { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" },
+          0.1,
+        );
+      }
 
-      // Hold (0.25 → 0.65)
-      tl.to({}, { duration: 0.4 });
+      // HOLD
+      tl.to({}, { duration: 0.35 });
 
-      // OUT phase (0.65 → 1)
+      // OUT phase
       tl.to(titleRef.current, {
         y: -120,
         opacity: 0,
-        scale: 0.85,
         filter: "blur(16px)",
         duration: 0.25,
         ease: "power3.in",
       });
       tl.to(
         subtitleRef.current,
-        {
-          y: -80,
-          opacity: 0,
-          scale: 0.85,
-          filter: "blur(12px)",
-          duration: 0.25,
-          ease: "power3.in",
-        },
+        { y: -80, opacity: 0, filter: "blur(12px)", duration: 0.25, ease: "power3.in" },
         "<0.05",
       );
+      if (descRef.current) {
+        tl.to(
+          descRef.current,
+          { y: -60, opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" },
+          "<0.05",
+        );
+      }
     }, containerRef);
 
     return () => ctx.revert();
-  }, [horizontal]);
+  }, [horizontal, intro]);
 
-  return (
-    <div className={styles.slideText} ref={containerRef}>
+  // Split title into characters for intro animation
+  const renderTitle = () => {
+    if (intro) {
+      return (
+        <h2 className={styles.slideTitle} ref={titleRef} style={{ perspective: "600px" }}>
+          {title.split("").map((char, i) => (
+            <span key={i} className="char" style={{ display: "inline-block" }}>
+              {char === " " ? "\u00A0" : char}
+            </span>
+          ))}
+        </h2>
+      );
+    }
+    return (
       <h2 className={styles.slideTitle} ref={titleRef}>
         {title}
       </h2>
+    );
+  };
+
+  return (
+    <div className={styles.slideText} ref={containerRef}>
+      {renderTitle()}
+      {description && <div className={styles.decorLine} ref={lineRef} />}
       <p className={styles.slideSubtitle} ref={subtitleRef}>
         {subtitle}
       </p>
+      {description && (
+        <p className={styles.slideDescription} ref={descRef}>
+          {description}
+        </p>
+      )}
     </div>
   );
 }
